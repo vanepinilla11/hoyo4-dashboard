@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⛳ Concurso Hoyo 4 — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0c0c0c;
+  --s1:#141414;--s2:#1a1a1a;--s3:#222;
+  --b1:#2a2a2a;--b2:#333;--b3:#444;
+  --t1:#f2ede6;--t2:#9a9590;--t3:#5a5550;
+  --gold:#c8a84b;--gold2:#e8c96a;--gold3:#8a6f32;--gold-bg:rgba(200,168,75,0.08);
+  --green:#3ea76b;--green2:#5cc487;--green-bg:rgba(62,167,107,0.08);
+  --red:#d95252;--red2:#f07070;--red-bg:rgba(217,82,82,0.08);
+  --blue:#4a7fd4;--blue-bg:rgba(74,127,212,0.08);
+  --r:8px;--r2:14px;
+  --font-display:'Bebas Neue',sans-serif;
+  --font-cond:'Barlow Condensed',sans-serif;
+  --font-body:'Barlow',sans-serif;
+}
+body{background:var(--bg);color:var(--t1);font-family:var(--font-body);font-size:13px;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+
+/* ── TOPBAR ── */
+#topbar{
+  position:sticky;top:0;z-index:200;
+  background:rgba(12,12,12,0.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--b1);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;height:58px;
+}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{
+  width:36px;height:36px;background:var(--gold);border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:20px;color:#000;line-height:1;
+}
+.logo-name{font-family:var(--font-display);font-size:20px;color:var(--t1);letter-spacing:1px}
+.logo-sub{font-size:10px;color:var(--t3);font-weight:400;letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.topnav{display:flex;gap:2px}
+.topnav button{
+  font-family:var(--font-body);font-size:12px;font-weight:500;
+  background:none;border:none;color:var(--t2);
+  padding:7px 14px;border-radius:6px;cursor:pointer;transition:.15s;letter-spacing:.3px;
+}
+.topnav button:hover{background:var(--s2);color:var(--t1)}
+.topnav button.active{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold3)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.badge-live{
+  display:flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:600;color:var(--green2);letter-spacing:.5px;
+  background:var(--green-bg);border:1px solid rgba(62,167,107,0.25);
+  padding:4px 10px;border-radius:20px;
+}
+.dot{width:5px;height:5px;background:var(--green2);border-radius:50%;animation:blink 1.8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.btn-upload{
+  font-family:var(--font-body);font-size:11px;font-weight:600;letter-spacing:.3px;
+  background:var(--gold);border:none;color:#000;
+  padding:7px 14px;border-radius:6px;cursor:pointer;transition:.15s;
+}
+.btn-upload:hover{background:var(--gold2)}
+
+/* ── PAGES ── */
+.page{display:none;padding:28px;max-width:1400px;margin:0 auto;animation:fadeIn .25s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PAGE HEADER ── */
+.ph{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px}
+.ph-left h1{font-family:var(--font-display);font-size:28px;color:var(--t1);letter-spacing:1px;line-height:1}
+.ph-left p{font-size:11px;color:var(--t3);margin-top:4px;letter-spacing:.5px;text-transform:uppercase}
+.ph-right{display:flex;gap:8px;align-items:center}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--b1);margin:22px 0}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;gap:14px;margin-bottom:22px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.kpi{
+  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);
+  padding:18px 20px;position:relative;overflow:hidden;transition:.2s;
+}
+.kpi:hover{border-color:var(--b2)}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:var(--accent,var(--gold))}
+.kpi.gold{--accent:var(--gold)}
+.kpi.green{--accent:var(--green)}
+.kpi.red{--accent:var(--red)}
+.kpi.blue{--accent:var(--blue)}
+.kpi-lbl{font-size:10px;font-weight:600;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px}
+.kpi-val{font-family:var(--font-display);font-size:38px;color:var(--t1);line-height:1;margin-bottom:6px}
+.kpi-val.big{font-size:44px}
+.kpi-sub{font-size:11px;color:var(--t2);display:flex;align-items:center;gap:5px}
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px}
+.tag.up{background:var(--green-bg);color:var(--green2);border:1px solid rgba(62,167,107,.2)}
+.tag.down{background:var(--red-bg);color:var(--red2);border:1px solid rgba(217,82,82,.2)}
+.tag.neu{background:var(--s2);color:var(--t2)}
+
+/* ── CHART CARD ── */
+.cc{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:22px;overflow:hidden}
+.cc-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
+.cc-title{font-family:var(--font-cond);font-size:16px;font-weight:700;color:var(--t1);letter-spacing:.5px;margin-bottom:2px;text-transform:uppercase}
+.cc-sub{font-size:11px;color:var(--t3);font-weight:400}
+.cc-tabs{display:flex;gap:4px}
+.ct{font-family:var(--font-body);font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;background:none;border:1px solid var(--b2);color:var(--t2);padding:5px 10px;border-radius:5px;cursor:pointer;transition:.15s}
+.ct.active{background:var(--gold);border-color:var(--gold);color:#000}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.row21{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
+.row12{display:grid;grid-template-columns:1fr 2fr;gap:14px;margin-bottom:14px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.mb14{margin-bottom:14px}
+
+/* ── RANKING TABLE ── */
+.rtable{width:100%;border-collapse:collapse}
+.rtable thead th{
+  font-size:9px;font-weight:700;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;
+  padding:8px 10px;text-align:left;border-bottom:1px solid var(--b1);
+}
+.rtable tbody tr{cursor:default;transition:.1s}
+.rtable tbody tr:hover td{background:rgba(255,255,255,.02)}
+.rtable tbody td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.025);vertical-align:middle;font-size:12px}
+.rtable tbody tr:last-child td{border-bottom:none}
+.rnum{
+  font-family:var(--font-cond);font-size:14px;font-weight:700;
+  color:var(--t3);width:32px;text-align:center;
+}
+.rnum.g1{color:var(--gold);}
+.rnum.g2{color:#b0b0b0;}
+.rnum.g3{color:#c47a3a;}
+.rname{font-weight:500;color:var(--t1);font-size:12px}
+.raccion{font-size:10px;color:var(--t3);margin-top:1px}
+.rbar-wrap{width:80px}
+.rbar{height:3px;background:var(--s3);border-radius:2px;overflow:hidden;margin-top:5px}
+.rbar-fill{height:100%;border-radius:2px;background:var(--gold)}
+.rbar-fill.green{background:var(--green)}
+.rpct{font-family:var(--font-cond);font-size:13px;font-weight:700}
+.rpct.gold{color:var(--gold2)}
+.rpct.green{color:var(--green2)}
+.rpct.red{color:var(--red2)}
+.rcount{font-family:var(--font-cond);font-size:15px;font-weight:700;color:var(--t1)}
+
+/* ── PROGRESS RING ── */
+.ring-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;padding:10px 0}
+.ring-svg{position:relative}
+.ring-label{text-align:center}
+.ring-val{font-family:var(--font-display);font-size:36px;color:var(--t1);line-height:1}
+.ring-desc{font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-top:4px}
+
+/* ── SEARCH ── */
+.search-wrap{position:relative;margin-bottom:16px}
+.search-wrap input{
+  width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);
+  color:var(--t1);font-family:var(--font-body);font-size:13px;
+  padding:10px 14px 10px 36px;outline:none;transition:.15s;
+}
+.search-wrap input:focus{border-color:var(--gold);background:var(--s3)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:14px}
+#search-results{
+  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);
+  overflow:hidden;display:none;
+}
+#search-results.show{display:block}
+.sr-card{padding:16px 20px;border-bottom:1px solid var(--b1)}
+.sr-card:last-child{border-bottom:none}
+.sr-name{font-family:var(--font-cond);font-size:18px;font-weight:700;color:var(--t1);margin-bottom:8px}
+.sr-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.sr-stat{background:var(--s2);border-radius:7px;padding:10px;text-align:center}
+.sr-stat-val{font-family:var(--font-display);font-size:24px;color:var(--t1)}
+.sr-stat-lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.no-results{padding:20px;text-align:center;color:var(--t3);font-size:12px}
+
+/* ── CALENDAR HEATMAP ── */
+.cal-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.cal-cell{
+  border-radius:6px;padding:10px 8px;text-align:center;
+  border:1px solid var(--b1);transition:.15s;cursor:default;position:relative;
+}
+.cal-cell:hover{transform:scale(1.02);border-color:var(--b2)}
+.cal-date{font-size:9px;color:var(--t3);font-weight:600;letter-spacing:.5px;margin-bottom:4px}
+.cal-jug{font-family:var(--font-display);font-size:20px;line-height:1;margin-bottom:2px}
+.cal-sub{font-size:9px;color:var(--t2)}
+.cal-pct{font-size:8px;font-weight:700;margin-top:3px}
+.cal-empty{border-style:dashed;opacity:.4}
+
+/* ── UPLOAD MODAL ── */
+#modal-overlay{
+  display:none;position:fixed;inset:0;z-index:999;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;
+}
+#modal-overlay.show{display:flex}
+.modal{
+  background:var(--s1);border:1px solid var(--b2);border-radius:var(--r2);
+  padding:32px;width:480px;max-width:90vw;
+}
+.modal h2{font-family:var(--font-display);font-size:24px;color:var(--t1);margin-bottom:6px;letter-spacing:1px}
+.modal p{font-size:12px;color:var(--t2);margin-bottom:24px;line-height:1.7}
+.drop-zone{
+  border:2px dashed var(--b2);border-radius:var(--r2);padding:36px 24px;
+  text-align:center;cursor:pointer;transition:.2s;background:var(--s2);
+}
+.drop-zone:hover{border-color:var(--gold);background:var(--gold-bg)}
+.drop-zone p{font-size:12px;color:var(--t2);margin-top:8px}
+.drop-zone .dz-icon{font-size:32px;margin-bottom:8px}
+.modal-actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+.btn-cancel{font-family:var(--font-body);font-size:12px;font-weight:600;background:none;border:1px solid var(--b2);color:var(--t2);padding:8px 16px;border-radius:6px;cursor:pointer;}
+.status-msg{font-size:11px;margin-top:10px;padding:8px 12px;border-radius:6px;display:none}
+.status-msg.ok{background:var(--green-bg);color:var(--green2);display:block;border:1px solid rgba(62,167,107,.2)}
+.status-msg.err{background:var(--red-bg);color:var(--red2);display:block;border:1px solid rgba(217,82,82,.2)}
+
+/* ── LEGEND ── */
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
+.leg-dot{width:8px;height:8px;border-radius:2px}
+
+/* ── FOOTER ── */
+footer{text-align:center;padding:24px;color:var(--t3);font-size:10px;letter-spacing:1px;text-transform:uppercase;border-top:1px solid var(--b1);margin-top:20px}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--b3)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}.row2,.row21,.row12,.row3{grid-template-columns:1fr}.cal-grid{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-mark">H4</div>
+    <div>
+      <div class="logo-name">CONCURSO HOYO 4</div>
+      <div class="logo-sub">Club de Golf · Dashboard Ejecutivo</div>
+    </div>
+  </div>
+  <nav class="topnav">
+    <button class="active" onclick="showPage('overview',this)">Resumen</button>
+    <button onclick="showPage('ranking',this)">Ranking</button>
+    <button onclick="showPage('calendario',this)">Calendario</button>
+    <button onclick="showPage('buscador',this)">Buscador</button>
+    <button onclick="showPage('actualizar',this)">Actualizar</button>
+  </nav>
+  <div class="topbar-right">
+    <div class="badge-live"><span class="dot"></span>En vivo · 2026</div>
+    <button class="btn-upload" onclick="showModal()">+ Nuevo fin de semana</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ OVERVIEW ═══════════════════════ -->
+<div id="page-overview" class="page active">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>RESUMEN GENERAL</h1>
+      <p>Temporada 2026 · Datos actualizados al 4 de mayo</p>
+    </div>
+  </div>
+
+  <!-- KPIs principales -->
+  <div class="kpi-grid g4 mb14">
+    <div class="kpi gold">
+      <div class="kpi-lbl">Total Participaciones</div>
+      <div class="kpi-val big">1.764</div>
+      <div class="kpi-sub">en 32 fechas jugadas</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-lbl">Ganadores (Hoyo en Green)</div>
+      <div class="kpi-val big">457</div>
+      <div class="kpi-sub"><span class="tag up">↑ 25.9%</span> tasa de victoria</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-lbl">No lograron el green</div>
+      <div class="kpi-val big">1.307</div>
+      <div class="kpi-sub"><span class="tag down">74.1%</span> del total</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-lbl">Socios Participantes</div>
+      <div class="kpi-val big">298</div>
+      <div class="kpi-sub">promedio 55.1 / día</div>
+    </div>
+  </div>
+
+  <!-- Charts row 1 -->
+  <div class="row2 mb14">
+    <!-- Jugadores vs Ganadores por fecha -->
+    <div class="cc" style="grid-column:span 1">
+      <div class="cc-hdr">
+        <div>
+          <div class="cc-title">Participación por Fecha</div>
+          <div class="cc-sub">Jugadores y ganadores en cada día</div>
+        </div>
+        <div class="cc-tabs">
+          <button class="ct active" onclick="switchDateChart('bar',this)">Barras</button>
+          <button class="ct" onclick="switchDateChart('line',this)">Línea</button>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="leg"><span class="leg-dot" style="background:#c8a84b"></span>Jugadores</span>
+        <span class="leg"><span class="leg-dot" style="background:#3ea76b"></span>Ganadores</span>
+      </div>
+      <div style="position:relative;height:260px">
+        <canvas id="chartFechas" role="img" aria-label="Participación por fecha"></canvas>
+      </div>
+    </div>
+
+    <!-- Donut tasa de victoria + stats -->
+    <div class="cc" style="display:flex;flex-direction:column;gap:16px">
+      <div class="cc-hdr" style="margin-bottom:0">
+        <div>
+          <div class="cc-title">Tasa de Victoria Global</div>
+          <div class="cc-sub">Del total de golpes al hoyo 4</div>
+        </div>
+      </div>
+      <div class="ring-wrap">
+        <svg width="160" height="160" viewBox="0 0 160 160" role="img" aria-label="Tasa de victoria 25.9%">
+          <circle cx="80" cy="80" r="65" fill="none" stroke="#222" stroke-width="16"/>
+          <circle cx="80" cy="80" r="65" fill="none" stroke="#3ea76b" stroke-width="16"
+            stroke-dasharray="408.41" stroke-dashoffset="302.5"
+            stroke-linecap="round" transform="rotate(-90 80 80)"/>
+          <circle cx="80" cy="80" r="65" fill="none" stroke="#d95252" stroke-width="16"
+            stroke-dasharray="408.41" stroke-dashoffset="105.9"
+            stroke-linecap="round" transform="rotate(-90 80 80)" opacity=".35"/>
+          <text x="80" y="74" text-anchor="middle" font-family="'Bebas Neue'" font-size="32" fill="#f2ede6">25.9%</text>
+          <text x="80" y="93" text-anchor="middle" font-family="Barlow" font-size="10" fill="#9a9590">victorias</text>
+        </svg>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:var(--s2);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-family:var(--font-display);font-size:26px;color:var(--green2)">457</div>
+          <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-top:2px">En Green</div>
+        </div>
+        <div style="background:var(--s2);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-family:var(--font-display);font-size:26px;color:var(--red2)">1.307</div>
+          <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-top:2px">Fuera</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts row 2 -->
+  <div class="row3 mb14">
+    <!-- Por mes -->
+    <div class="cc">
+      <div class="cc-hdr">
+        <div>
+          <div class="cc-title">Resumen por Mes</div>
+          <div class="cc-sub">Jugadores y ganadores</div>
+        </div>
+      </div>
+      <div style="position:relative;height:200px">
+        <canvas id="chartMes" role="img" aria-label="Resumen por mes"></canvas>
+      </div>
+    </div>
+
+    <!-- % victoria por mes -->
+    <div class="cc">
+      <div class="cc-hdr">
+        <div>
+          <div class="cc-title">% Victoria por Mes</div>
+          <div class="cc-sub">Dificultad relativa</div>
+        </div>
+      </div>
+      <div style="position:relative;height:200px">
+        <canvas id="chartPctMes" role="img" aria-label="Porcentaje de victoria por mes"></canvas>
+      </div>
+    </div>
+
+    <!-- Sab vs Dom -->
+    <div class="cc">
+      <div class="cc-hdr">
+        <div>
+          <div class="cc-title">Sábado vs Domingo</div>
+          <div class="cc-sub">Asistencia por tipo de día</div>
+        </div>
+      </div>
+      <div style="position:relative;height:200px">
+        <canvas id="chartDias" role="img" aria-label="Sábado vs Domingo"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Records row -->
+  <div class="kpi-grid g4">
+    <div class="kpi gold">
+      <div class="kpi-lbl">Día más concurrido</div>
+      <div class="kpi-val">79</div>
+      <div class="kpi-sub">jugadores · 31 Ene 2026</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-lbl">Mes más activo</div>
+      <div class="kpi-val">Marzo</div>
+      <div class="kpi-sub">562 participaciones</div>
+    </div>
+    <div class="kpi gold">
+      <div class="kpi-lbl">Mayor % Victoria</div>
+      <div class="kpi-val">Mayo</div>
+      <div class="kpi-sub">32.9% de tasa de éxito</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-lbl">Promedio diario</div>
+      <div class="kpi-val">55.1</div>
+      <div class="kpi-sub">socios por fecha</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ RANKING ═══════════════════════ -->
+<div id="page-ranking" class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>RANKING DE SOCIOS</h1>
+      <p>Clasificación por victorias · Temporada 2026</p>
+    </div>
+    <div class="ph-right">
+      <div class="cc-tabs">
+        <button class="ct active" onclick="switchRanking('ganadores',this)">Por Victorias</button>
+        <button class="ct" onclick="switchRanking('jugadores',this)">Por Participación</button>
+        <button class="ct" onclick="switchRanking('pct',this)">Por % Éxito</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row12">
+    <!-- Podium top 3 -->
+    <div class="cc" style="display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px;padding:32px">
+      <div style="font-family:var(--font-cond);font-size:11px;font-weight:700;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Top 3 — Por Victorias</div>
+      <div id="podium" style="display:flex;flex-direction:column;gap:12px;width:100%"></div>
+    </div>
+    <!-- Full ranking table -->
+    <div class="cc" style="padding:0;overflow:hidden">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--b1);display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="cc-title" style="font-size:13px">Tabla Completa</div>
+          <div class="cc-sub">Top 15 · actualizado</div>
+        </div>
+        <span id="rank-mode-badge" class="tag neu">Por Victorias</span>
+      </div>
+      <div id="ranking-table-wrap" style="overflow-y:auto;max-height:480px">
+        <table class="rtable">
+          <thead>
+            <tr>
+              <th>#</th><th>Socio</th><th>Acción</th>
+              <th>Jugadas</th><th>Victorias</th><th>% Éxito</th>
+            </tr>
+          </thead>
+          <tbody id="ranking-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Chart top ganadores -->
+  <div class="row2">
+    <div class="cc">
+      <div class="cc-hdr">
+        <div>
+          <div class="cc-title">Top 10 — Victorias Acumuladas</div>
+          <div class="cc-sub">Número total de veces que cayeron en green</div>
+        </div>
+      </div>
+      <div style="position:relative;height:300px">
+        <canvas id="chartTopGan" role="img" aria-label="Top ganadores"></canvas>
+      </div>
+    </div>
+    <div class="cc">
+      <div class="cc-hdr">
+        <div>
+          <div class="cc-title">Top 10 — Mejor % de Éxito</div>
+          <div class="cc-sub">Mínimo 5 partidas jugadas</div>
+        </div>
+      </div>
+      <div style="position:relative;height:300px">
+        <canvas id="chartTopPct" role="img" aria-label="Mejor porcentaje"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ CALENDARIO ═══════════════════════ -->
+<div id="page-calendario" class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>CALENDARIO 2026</h1>
+      <p>Actividad registrada por fecha · Hoyo 4</p>
+    </div>
+  </div>
+  <div class="cc mb14">
+    <div class="cc-hdr">
+      <div>
+        <div class="cc-title">Heatmap de Participación</div>
+        <div class="cc-sub">Tamaño y color indican número de jugadores y % de ganadores</div>
+      </div>
+      <div class="legend">
+        <span class="leg"><span class="leg-dot" style="background:var(--green)"></span>+30% victorias</span>
+        <span class="leg"><span class="leg-dot" style="background:var(--gold)"></span>20-30%</span>
+        <span class="leg"><span class="leg-dot" style="background:var(--red)"></span>-20%</span>
+      </div>
+    </div>
+    <div id="cal-grid" class="cal-grid"></div>
+  </div>
+  <div class="cc">
+    <div class="cc-hdr">
+      <div>
+        <div class="cc-title">Evolución de Participación</div>
+        <div class="cc-sub">Tendencia semana a semana</div>
+      </div>
+    </div>
+    <div style="position:relative;height:280px">
+      <canvas id="chartEvol" role="img" aria-label="Evolución de participación"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ BUSCADOR ═══════════════════════ -->
+<div id="page-buscador" class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>BUSCADOR DE SOCIOS</h1>
+      <p>Consulta estadísticas individuales por nombre o número de acción</p>
+    </div>
+  </div>
+
+  <div class="cc mb14">
+    <div style="margin-bottom:20px">
+      <div class="cc-title" style="margin-bottom:6px">Buscar Socio</div>
+      <div class="cc-sub">Escribe el nombre o número de acción del socio</div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Nombre del socio o número de acción..." oninput="searchPlayer(this.value)">
+    </div>
+    <div id="search-results"></div>
+  </div>
+
+  <div class="cc">
+    <div class="cc-hdr">
+      <div>
+        <div class="cc-title">Todos los Socios Registrados</div>
+        <div class="cc-sub">298 socios · ordenados por victorias</div>
+      </div>
+    </div>
+    <div style="overflow-y:auto;max-height:500px">
+      <table class="rtable">
+        <thead>
+          <tr><th>#</th><th>Socio</th><th>Acción</th><th>Jugadas</th><th>Victorias</th><th>% Éxito</th></tr>
+        </thead>
+        <tbody id="all-players-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ ACTUALIZAR ═══════════════════════ -->
+<div id="page-actualizar" class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>ACTUALIZAR DATOS</h1>
+      <p>Agrega los resultados de cada nuevo fin de semana</p>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="cc">
+      <div class="cc-hdr"><div><div class="cc-title">Subir Nuevo Excel</div><div class="cc-sub">Archivo .xlsx del concurso actualizado</div></div></div>
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+        <div class="dz-icon">📂</div>
+        <div style="font-family:var(--font-cond);font-size:16px;font-weight:700;color:var(--t1);margin-bottom:4px">ARRASTRA TU ARCHIVO AQUÍ</div>
+        <p>o haz clic para seleccionar · Solo archivos .xlsx</p>
+      </div>
+      <input type="file" id="file-input" accept=".xlsx" style="display:none" onchange="handleFile(this.files[0])">
+      <div id="status-msg" class="status-msg"></div>
+      <div style="margin-top:16px;padding:14px;background:var(--s2);border-radius:var(--r);border-left:3px solid var(--gold)">
+        <div style="font-size:11px;font-weight:600;color:var(--gold);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Instrucciones</div>
+        <div style="font-size:11px;color:var(--t2);line-height:1.9">
+          1. Abre tu Excel y agrega los resultados del nuevo fin de semana<br>
+          2. Asegúrate que la hoja REGISTRO tenga el formato correcto<br>
+          3. Sube el archivo aquí y el dashboard se actualizará solo<br>
+          4. Los datos anteriores se preservan automáticamente
+        </div>
+      </div>
+    </div>
+
+    <div class="cc">
+      <div class="cc-hdr"><div><div class="cc-title">Registro Rápido Manual</div><div class="cc-sub">Para agregar un día específico</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div>
+          <label style="font-size:10px;font-weight:600;color:var(--t3);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px">Fecha del Juego</label>
+          <input type="date" id="new-fecha" style="width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);color:var(--t1);font-family:var(--font-body);font-size:13px;padding:9px 12px;outline:none">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:10px;font-weight:600;color:var(--t3);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px">Jugadores</label>
+            <input type="number" id="new-jug" placeholder="0" min="0" style="width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);color:var(--t1);font-family:var(--font-body);font-size:13px;padding:9px 12px;outline:none">
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:600;color:var(--t3);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px">Ganadores</label>
+            <input type="number" id="new-gan" placeholder="0" min="0" style="width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);color:var(--t1);font-family:var(--font-body);font-size:13px;padding:9px 12px;outline:none">
+          </div>
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:600;color:var(--t3);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px">Notas (opcional)</label>
+          <textarea id="new-notas" placeholder="Condiciones del día, novedades..." rows="3" style="width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);color:var(--t1);font-family:var(--font-body);font-size:13px;padding:9px 12px;outline:none;resize:vertical"></textarea>
+        </div>
+        <button onclick="addQuickEntry()" class="btn-upload" style="width:100%;padding:11px">AGREGAR ENTRADA</button>
+        <div id="quick-status" style="display:none;font-size:11px;padding:8px 12px;border-radius:6px;background:var(--green-bg);color:var(--green2);border:1px solid rgba(62,167,107,.2)">
+          ✓ Entrada registrada correctamente
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historial reciente -->
+  <div class="cc" style="margin-top:14px">
+    <div class="cc-hdr"><div><div class="cc-title">Últimas 8 Fechas Registradas</div><div class="cc-sub">Resumen de actividad reciente</div></div></div>
+    <div class="kpi-grid" id="recent-dates" style="grid-template-columns:repeat(4,1fr);gap:10px"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay">
+  <div class="modal">
+    <h2>NUEVO FIN DE SEMANA</h2>
+    <p>Sube el Excel actualizado con los resultados del último fin de semana para refrescar todos los indicadores del dashboard.</p>
+    <div class="drop-zone" onclick="document.getElementById('modal-file').click()">
+      <div class="dz-icon">📂</div>
+      <div style="font-family:var(--font-cond);font-size:15px;font-weight:700;color:var(--t1)">Seleccionar archivo Excel</div>
+      <p>Formato .xlsx · Hoja REGISTRO requerida</p>
+    </div>
+    <input type="file" id="modal-file" accept=".xlsx" style="display:none" onchange="handleFile(this.files[0])">
+    <div id="modal-status" class="status-msg"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<footer>⛳ Concurso Hoyo 4 · Club de Golf · Dashboard Ejecutivo 2026</footer>
+
+<script>
+// ════════════════════ DATA ════════════════════
+const DATA = {
+  totales: {"participaciones": 1764, "ganadores": 457, "perdedores": 1307, "pct_victoria": 25.9, "dias_jugados": 32, "socios_distintos": 298, "promedio_por_dia": 55.1, "max_dia": 79, "mejor_dia_fecha": "31/01/2026"},
+  por_fecha: [{"fecha": "17/01", "fecha_full": "2026-01-17", "dia": "sábado", "jugadores": 49, "ganadores": 9, "perdedores": 40, "pct": 18.4}, {"fecha": "18/01", "fecha_full": "2026-01-18", "dia": "domingo", "jugadores": 28, "ganadores": 8, "perdedores": 20, "pct": 28.6}, {"fecha": "24/01", "fecha_full": "2026-01-24", "dia": "sábado", "jugadores": 59, "ganadores": 18, "perdedores": 41, "pct": 30.5}, {"fecha": "25/01", "fecha_full": "2026-01-25", "dia": "domingo", "jugadores": 38, "ganadores": 12, "perdedores": 26, "pct": 31.6}, {"fecha": "31/01", "fecha_full": "2026-01-31", "dia": "sábado", "jugadores": 79, "ganadores": 25, "perdedores": 54, "pct": 31.6}, {"fecha": "01/02", "fecha_full": "2026-02-01", "dia": "domingo", "jugadores": 44, "ganadores": 12, "perdedores": 32, "pct": 27.3}, {"fecha": "07/02", "fecha_full": "2026-02-07", "dia": "sábado", "jugadores": 58, "ganadores": 16, "perdedores": 42, "pct": 27.6}, {"fecha": "08/02", "fecha_full": "2026-02-08", "dia": "domingo", "jugadores": 31, "ganadores": 9, "perdedores": 22, "pct": 29.0}, {"fecha": "14/02", "fecha_full": "2026-02-14", "dia": "sábado", "jugadores": 77, "ganadores": 15, "perdedores": 62, "pct": 19.5}, {"fecha": "15/02", "fecha_full": "2026-02-15", "dia": "domingo", "jugadores": 52, "ganadores": 10, "perdedores": 42, "pct": 19.2}, {"fecha": "21/02", "fecha_full": "2026-02-21", "dia": "sábado", "jugadores": 75, "ganadores": 16, "perdedores": 59, "pct": 21.3}, {"fecha": "22/02", "fecha_full": "2026-02-22", "dia": "domingo", "jugadores": 39, "ganadores": 8, "perdedores": 31, "pct": 20.5}, {"fecha": "28/02", "fecha_full": "2026-02-28", "dia": "sábado", "jugadores": 39, "ganadores": 8, "perdedores": 31, "pct": 20.5}, {"fecha": "01/03", "fecha_full": "2026-03-01", "dia": "domingo", "jugadores": 44, "ganadores": 11, "perdedores": 33, "pct": 25.0}, {"fecha": "07/03", "fecha_full": "2026-03-07", "dia": "sábado", "jugadores": 74, "ganadores": 13, "perdedores": 61, "pct": 17.6}, {"fecha": "08/03", "fecha_full": "2026-03-08", "dia": "domingo", "jugadores": 28, "ganadores": 11, "perdedores": 17, "pct": 39.3}, {"fecha": "14/03", "fecha_full": "2026-03-14", "dia": "sábado", "jugadores": 64, "ganadores": 19, "perdedores": 45, "pct": 29.7}, {"fecha": "15/03", "fecha_full": "2026-03-15", "dia": "domingo", "jugadores": 46, "ganadores": 13, "perdedores": 33, "pct": 28.3}, {"fecha": "21/03", "fecha_full": "2026-03-21", "dia": "sábado", "jugadores": 75, "ganadores": 18, "perdedores": 57, "pct": 24.0}, {"fecha": "22/03", "fecha_full": "2026-03-22", "dia": "domingo", "jugadores": 57, "ganadores": 15, "perdedores": 42, "pct": 26.3}, {"fecha": "23/03", "fecha_full": "2026-03-23", "dia": "lunes", "jugadores": 50, "ganadores": 14, "perdedores": 36, "pct": 28.0}, {"fecha": "28/03", "fecha_full": "2026-03-28", "dia": "sábado", "jugadores": 71, "ganadores": 16, "perdedores": 55, "pct": 22.5}, {"fecha": "29/03", "fecha_full": "2026-03-29", "dia": "domingo", "jugadores": 53, "ganadores": 12, "perdedores": 41, "pct": 22.6}, {"fecha": "11/04", "fecha_full": "2026-04-11", "dia": "sábado", "jugadores": 67, "ganadores": 19, "perdedores": 48, "pct": 28.4}, {"fecha": "12/04", "fecha_full": "2026-04-12", "dia": "domingo", "jugadores": 51, "ganadores": 12, "perdedores": 39, "pct": 23.5}, {"fecha": "18/04", "fecha_full": "2026-04-18", "dia": "sábado", "jugadores": 69, "ganadores": 19, "perdedores": 50, "pct": 27.5}, {"fecha": "19/04", "fecha_full": "2026-04-19", "dia": "domingo", "jugadores": 42, "ganadores": 10, "perdedores": 32, "pct": 23.8}, {"fecha": "25/04", "fecha_full": "2026-04-25", "dia": "sábado", "jugadores": 77, "ganadores": 16, "perdedores": 61, "pct": 20.8}, {"fecha": "26/04", "fecha_full": "2026-04-26", "dia": "domingo", "jugadores": 58, "ganadores": 17, "perdedores": 41, "pct": 29.3}, {"fecha": "01/05", "fecha_full": "2026-05-01", "dia": "viernes", "jugadores": 67, "ganadores": 20, "perdedores": 47, "pct": 29.9}, {"fecha": "02/05", "fecha_full": "2026-05-02", "dia": "sábado", "jugadores": 52, "ganadores": 17, "perdedores": 35, "pct": 32.7}, {"fecha": "03/05", "fecha_full": "2026-05-03", "dia": "domingo", "jugadores": 51, "ganadores": 19, "perdedores": 32, "pct": 37.3}],
+  por_mes: [{"mes": "enero", "jugadores": 253, "ganadores": 72, "perdedores": 181, "pct": 28.5}, {"mes": "febrero", "jugadores": 415, "ganadores": 94, "perdedores": 321, "pct": 22.7}, {"mes": "marzo", "jugadores": 562, "ganadores": 142, "perdedores": 420, "pct": 25.3}, {"mes": "abril", "jugadores": 364, "ganadores": 93, "perdedores": 271, "pct": 25.5}, {"mes": "mayo", "jugadores": 170, "ganadores": 56, "perdedores": 114, "pct": 32.9}],
+  top_ganadores: [{"nombre": "Andres Aguirre", "accion": "61", "jugadas": 26, "victorias": 11, "pct": 42.3}, {"nombre": "Jorge Carrillo", "accion": "248", "jugadas": 15, "victorias": 10, "pct": 66.7}, {"nombre": "Alejandro Pardo", "accion": "119", "jugadas": 20, "victorias": 10, "pct": 50.0}, {"nombre": "Reinaldo Gomez", "accion": "26", "jugadas": 15, "victorias": 8, "pct": 53.3}, {"nombre": "Nicolas Faccini", "accion": "305", "jugadas": 27, "victorias": 8, "pct": 29.6}, {"nombre": "Jose Manuel Rodriguez", "accion": "255", "jugadas": 14, "victorias": 7, "pct": 50.0}, {"nombre": "Martin Aguirre", "accion": "61", "jugadas": 11, "victorias": 7, "pct": 63.6}, {"nombre": "Santiago Davila", "accion": "81", "jugadas": 14, "victorias": 7, "pct": 50.0}, {"nombre": "Daniel Barbosa", "accion": "2237", "jugadas": 16, "victorias": 7, "pct": 43.8}, {"nombre": "Juan Carlos Devis", "accion": "346", "jugadas": 19, "victorias": 7, "pct": 36.8}, {"nombre": "Vytas Norkevicius", "accion": "126", "jugadas": 12, "victorias": 7, "pct": 58.3}, {"nombre": "Juan Carlos Ospina", "accion": "39", "jugadas": 16, "victorias": 6, "pct": 37.5}, {"nombre": "Roberto Fonnegra", "accion": "210", "jugadas": 25, "victorias": 6, "pct": 24.0}, {"nombre": "Nicolas Forero", "accion": "486", "jugadas": 15, "victorias": 6, "pct": 40.0}, {"nombre": "Nicolas Vargas", "accion": "308", "jugadas": 11, "victorias": 5, "pct": 45.5}],
+  top_jugadores: [{"nombre": "Nicolas Faccini", "accion": "305", "jugadas": 27, "victorias": 8, "pct": 29.6}, {"nombre": "Andres Aguirre", "accion": "61", "jugadas": 26, "victorias": 11, "pct": 42.3}, {"nombre": "Roberto Fonnegra", "accion": "210", "jugadas": 25, "victorias": 6, "pct": 24.0}, {"nombre": "Alejandro Badel", "accion": "213", "jugadas": 23, "victorias": 4, "pct": 17.4}, {"nombre": "Juan F Buendia", "accion": "132", "jugadas": 20, "victorias": 3, "pct": 15.0}, {"nombre": "Alejandro Pardo", "accion": "119", "jugadas": 20, "victorias": 10, "pct": 50.0}, {"nombre": "Juan Carlos Devis", "accion": "346", "jugadas": 19, "victorias": 7, "pct": 36.8}, {"nombre": "Pablo Fernandez de Soto", "accion": "325", "jugadas": 19, "victorias": 1, "pct": 5.3}, {"nombre": "Santiago Fernandez de Soto", "accion": "325", "jugadas": 18, "victorias": 3, "pct": 16.7}, {"nombre": "Alvaro Perez", "accion": "116", "jugadas": 18, "victorias": 3, "pct": 16.7}, {"nombre": "Juan Ignacio Gamboa", "accion": "257", "jugadas": 17, "victorias": 5, "pct": 29.4}, {"nombre": "Julio Cesar Gamboa", "accion": "117", "jugadas": 16, "victorias": 5, "pct": 31.2}, {"nombre": "Andres Giraldo", "accion": "119", "jugadas": 16, "victorias": 2, "pct": 12.5}, {"nombre": "Juan Carlos Ospina", "accion": "39", "jugadas": 16, "victorias": 6, "pct": 37.5}, {"nombre": "Daniel Barbosa", "accion": "2237", "jugadas": 16, "victorias": 7, "pct": 43.8}],
+  mejor_pct: [{"nombre": "Tomas Rueda", "accion": "261", "jugadas": 5, "victorias": 5, "pct": 100.0}, {"nombre": "Camilo Vargas", "accion": "308", "jugadas": 5, "victorias": 4, "pct": 80.0}, {"nombre": "Pablo Morales", "accion": "347", "jugadas": 6, "victorias": 4, "pct": 66.7}, {"nombre": "Jorge Carrillo", "accion": "248", "jugadas": 15, "victorias": 10, "pct": 66.7}, {"nombre": "Martin Aguirre", "accion": "61", "jugadas": 11, "victorias": 7, "pct": 63.6}, {"nombre": "Joaquin Vargas", "accion": "92", "jugadas": 5, "victorias": 3, "pct": 60.0}, {"nombre": "Esteban Martinez", "accion": "48", "jugadas": 5, "victorias": 3, "pct": 60.0}, {"nombre": "Vytas Norkevicius", "accion": "126", "jugadas": 12, "victorias": 7, "pct": 58.3}, {"nombre": "Juan Varela", "accion": "258", "jugadas": 7, "victorias": 4, "pct": 57.1}, {"nombre": "Pablo Chiappe", "accion": "233", "jugadas": 7, "victorias": 4, "pct": 57.1}],
+  todos_socios: [{"nombre": "Andres Aguirre", "accion": "61", "jugadas": 26, "victorias": 11, "pct": 42.3}, {"nombre": "Jorge Carrillo", "accion": "248", "jugadas": 15, "victorias": 10, "pct": 66.7}, {"nombre": "Alejandro Pardo", "accion": "119", "jugadas": 20, "victorias": 10, "pct": 50.0}, {"nombre": "Reinaldo Gomez", "accion": "26", "jugadas": 15, "victorias": 8, "pct": 53.3}, {"nombre": "Nicolas Faccini", "accion": "305", "jugadas": 27, "victorias": 8, "pct": 29.6}, {"nombre": "Jose Manuel Rodriguez", "accion": "255", "jugadas": 14, "victorias": 7, "pct": 50.0}, {"nombre": "Martin Aguirre", "accion": "61", "jugadas": 11, "victorias": 7, "pct": 63.6}, {"nombre": "Santiago Davila", "accion": "81", "jugadas": 14, "victorias": 7, "pct": 50.0}, {"nombre": "Daniel Barbosa", "accion": "2237", "jugadas": 16, "victorias": 7, "pct": 43.8}, {"nombre": "Juan Carlos Devis", "accion": "346", "jugadas": 19, "victorias": 7, "pct": 36.8}, {"nombre": "Vytas Norkevicius", "accion": "126", "jugadas": 12, "victorias": 7, "pct": 58.3}, {"nombre": "Juan Carlos Ospina", "accion": "39", "jugadas": 16, "victorias": 6, "pct": 37.5}, {"nombre": "Roberto Fonnegra", "accion": "210", "jugadas": 25, "victorias": 6, "pct": 24.0}, {"nombre": "Nicolas Forero", "accion": "486", "jugadas": 15, "victorias": 6, "pct": 40.0}, {"nombre": "Nicolas Vargas", "accion": "308", "jugadas": 11, "victorias": 5, "pct": 45.5}, {"nombre": "Tomas Rueda", "accion": "261", "jugadas": 5, "victorias": 5, "pct": 100.0}, {"nombre": "Juan Ignacio Gamboa", "accion": "257", "jugadas": 17, "victorias": 5, "pct": 29.4}, {"nombre": "Julio Cesar Gamboa", "accion": "117", "jugadas": 16, "victorias": 5, "pct": 31.2}, {"nombre": "Jose Cuartas", "accion": "138", "jugadas": 12, "victorias": 5, "pct": 41.7}, {"nombre": "Juan Pablo Valserra", "accion": "264", "jugadas": 14, "victorias": 5, "pct": 35.7}, {"nombre": "Juan Felipe Lopez", "accion": "79", "jugadas": 15, "victorias": 5, "pct": 33.3}, {"nombre": "Rodolfo Rey", "accion": "176", "jugadas": 11, "victorias": 5, "pct": 45.5}, {"nombre": "Andres Agudelo", "accion": "165", "jugadas": 14, "victorias": 5, "pct": 35.7}, {"nombre": "Pablo Morales", "accion": "347", "jugadas": 6, "victorias": 4, "pct": 66.7}, {"nombre": "Alejandro Vargas", "accion": "308", "jugadas": 15, "victorias": 4, "pct": 26.7}, {"nombre": "Gabriel Navas R", "accion": "198", "jugadas": 12, "victorias": 4, "pct": 33.3}, {"nombre": "Gaston Gamez", "accion": "67", "jugadas": 9, "victorias": 4, "pct": 44.4}, {"nombre": "Andres Paez", "accion": "121", "jugadas": 13, "victorias": 4, "pct": 30.8}, {"nombre": "Daniel Lozano", "accion": "2205", "jugadas": 11, "victorias": 4, "pct": 36.4}, {"nombre": "Lorenzo Villegas", "accion": "497", "jugadas": 4, "victorias": 4, "pct": 100.0}, {"nombre": "Juan Varela", "accion": "258", "jugadas": 7, "victorias": 4, "pct": 57.1}, {"nombre": "Sebastian Palomares", "accion": "337", "jugadas": 11, "victorias": 4, "pct": 36.4}, {"nombre": "Juan Manuel Mendoza Paskvalic", "accion": "298", "jugadas": 11, "victorias": 4, "pct": 36.4}, {"nombre": "Liliana Madero V", "accion": "296", "jugadas": 10, "victorias": 4, "pct": 40.0}, {"nombre": "Joaquin Jimenez", "accion": "98", "jugadas": 11, "victorias": 4, "pct": 36.4}, {"nombre": "Manuel Renjifo", "accion": "265", "jugadas": 14, "victorias": 4, "pct": 28.6}, {"nombre": "Andres Varela", "accion": "258", "jugadas": 9, "victorias": 4, "pct": 44.4}, {"nombre": "Camilo Vargas", "accion": "308", "jugadas": 5, "victorias": 4, "pct": 80.0}, {"nombre": "Pablo Chiappe", "accion": "233", "jugadas": 7, "victorias": 4, "pct": 57.1}, {"nombre": "Tomas Bonilla", "accion": "139", "jugadas": 10, "victorias": 4, "pct": 40.0}, {"nombre": "Carlos Guarin", "accion": "462", "jugadas": 13, "victorias": 4, "pct": 30.8}, {"nombre": "Carlos Rodriguez", "accion": "255", "jugadas": 14, "victorias": 4, "pct": 28.6}, {"nombre": "Alejandro Badel", "accion": "213", "jugadas": 23, "victorias": 4, "pct": 17.4}, {"nombre": "Martin Bravo", "accion": "682", "jugadas": 9, "victorias": 3, "pct": 33.3}, {"nombre": "Mario Calderon", "accion": "63", "jugadas": 6, "victorias": 3, "pct": 50.0}, {"nombre": "Lucas Duran", "accion": "77", "jugadas": 8, "victorias": 3, "pct": 37.5}, {"nombre": "Carlos Gomez", "accion": "548", "jugadas": 15, "victorias": 3, "pct": 20.0}, {"nombre": "Oliver Riebow", "accion": "192", "jugadas": 6, "victorias": 3, "pct": 50.0}, {"nombre": "Rafael Hernandez", "accion": "159", "jugadas": 11, "victorias": 3, "pct": 27.3}, {"nombre": "Camilo Duran", "accion": "28", "jugadas": 9, "victorias": 3, "pct": 33.3}, {"nombre": "Camilo Guzman", "accion": "309", "jugadas": 10, "victorias": 3, "pct": 30.0}, {"nombre": "Esteban Martinez", "accion": "48", "jugadas": 5, "victorias": 3, "pct": 60.0}, {"nombre": "Felipe Guarin", "accion": "462", "jugadas": 8, "victorias": 3, "pct": 37.5}, {"nombre": "Gabriel Carrasquilla", "accion": "438", "jugadas": 9, "victorias": 3, "pct": 33.3}, {"nombre": "Felipe Pinto", "accion": "23", "jugadas": 14, "victorias": 3, "pct": 21.4}, {"nombre": "Joaquin Vargas", "accion": "92", "jugadas": 5, "victorias": 3, "pct": 60.0}, {"nombre": "Jaime Pineda", "accion": "171", "jugadas": 15, "victorias": 3, "pct": 20.0}, {"nombre": "Juan F Buendia", "accion": "132", "jugadas": 20, "victorias": 3, "pct": 15.0}, {"nombre": "Jorge Lizarazu", "accion": "183", "jugadas": 13, "victorias": 3, "pct": 23.1}, {"nombre": "Julian Perez", "accion": "642", "jugadas": 6, "victorias": 3, "pct": 50.0}, {"nombre": "Alvaro Perez", "accion": "116", "jugadas": 18, "victorias": 3, "pct": 16.7}, {"nombre": "Alfredo Gaviria", "accion": "3", "jugadas": 8, "victorias": 3, "pct": 37.5}, {"nombre": "Andreas Herings", "accion": "220", "jugadas": 4, "victorias": 3, "pct": 75.0}, {"nombre": "Santiago Pardo", "accion": "224", "jugadas": 9, "victorias": 3, "pct": 33.3}, {"nombre": "Santiago Calderon", "accion": "2232", "jugadas": 15, "victorias": 3, "pct": 20.0}, {"nombre": "Santiago Fernandez de Soto", "accion": "325", "jugadas": 18, "victorias": 3, "pct": 16.7}, {"nombre": "Claudia Silva", "accion": "53", "jugadas": 9, "victorias": 3, "pct": 33.3}, {"nombre": "Mateo Laverde", "accion": "622", "jugadas": 6, "victorias": 3, "pct": 50.0}, {"nombre": "Jaime Ruiz", "accion": "291", "jugadas": 11, "victorias": 2, "pct": 18.2}, {"nombre": "Juan Diego Martinez", "accion": "148", "jugadas": 15, "victorias": 2, "pct": 13.3}, {"nombre": "Jorge Calderon", "accion": "113", "jugadas": 8, "victorias": 2, "pct": 25.0}, {"nombre": "Nicolas Klein", "accion": "142", "jugadas": 7, "victorias": 2, "pct": 28.6}, {"nombre": "David Mayorga", "accion": "2346", "jugadas": 2, "victorias": 2, "pct": 100.0}, {"nombre": "Victor Delgado", "accion": "6", "jugadas": 11, "victorias": 2, "pct": 18.2}, {"nombre": "Ricardo Blanco", "accion": "243", "jugadas": 5, "victorias": 2, "pct": 40.0}, {"nombre": "Rafael Ureña", "accion": "1088", "jugadas": 9, "victorias": 2, "pct": 22.2}, {"nombre": "Nicolas Ochoa", "accion": "677", "jugadas": 8, "victorias": 2, "pct": 25.0}, {"nombre": "Carlos G Lopez", "accion": "286", "jugadas": 7, "victorias": 2, "pct": 28.6}, {"nombre": "Camilo Narvaez", "accion": "149", "jugadas": 11, "victorias": 2, "pct": 18.2}, {"nombre": "Camilo Moscoso", "accion": "650", "jugadas": 8, "victorias": 2, "pct": 25.0}, {"nombre": "Camilo Leyva", "accion": "27", "jugadas": 12, "victorias": 2, "pct": 16.7}, {"nombre": "Antonio Jaramillo", "accion": "517", "jugadas": 8, "victorias": 2, "pct": 25.0}, {"nombre": "Diego Mejia", "accion": "290", "jugadas": 14, "victorias": 2, "pct": 14.3}, {"nombre": "Douglas Smith", "accion": "141", "jugadas": 4, "victorias": 2, "pct": 50.0}, {"nombre": "Jeronimo Escobar", "accion": "2003", "jugadas": 7, "victorias": 2, "pct": 28.6}, {"nombre": "Jaime Enrique Leal", "accion": "164", "jugadas": 7, "victorias": 2, "pct": 28.6}, {"nombre": "Andres Herrera", "accion": "221", "jugadas": 10, "victorias": 2, "pct": 20.0}, {"nombre": "Andres Giraldo", "accion": "119", "jugadas": 16, "victorias": 2, "pct": 12.5}, {"nombre": "Rodrigo Cardona", "accion": "247", "jugadas": 14, "victorias": 2, "pct": 14.3}, {"nombre": "Juan Esteban Perez", "accion": "295", "jugadas": 8, "victorias": 2, "pct": 25.0}, {"nombre": "Santiago Cortes S", "accion": "19", "jugadas": 10, "victorias": 2, "pct": 20.0}, {"nombre": "Santiago Trujillo", "accion": "237", "jugadas": 11, "victorias": 2, "pct": 18.2}, {"nombre": "Juan Jose Delgado", "accion": "167", "jugadas": 5, "victorias": 2, "pct": 40.0}, {"nombre": "Felipe Gonzalez", "accion": "302", "jugadas": 5, "victorias": 2, "pct": 40.0}, {"nombre": "Luis Castaño", "accion": "2007", "jugadas": 14, "victorias": 2, "pct": 14.3}, {"nombre": "Fernando Laserna", "accion": "173", "jugadas": 8, "victorias": 2, "pct": 25.0}, {"nombre": "Natalia Chiappe", "accion": "233", "jugadas": 3, "victorias": 2, "pct": 66.7}, {"nombre": "Matias Trowcar", "accion": "284", "jugadas": 5, "victorias": 2, "pct": 40.0}, {"nombre": "Alexandra Canizalez", "accion": "2003", "jugadas": 8, "victorias": 2, "pct": 25.0}, {"nombre": "Alejandro Hernandez", "accion": "270", "jugadas": 8, "victorias": 2, "pct": 25.0}, {"nombre": "German Ariza", "accion": "71", "jugadas": 15, "victorias": 2, "pct": 13.3}, {"nombre": "Jeronimo Silva", "accion": "154", "jugadas": 7, "victorias": 2, "pct": 28.6}, {"nombre": "Juan Carlos Castilla", "accion": "321", "jugadas": 8, "victorias": 2, "pct": 25.0}, {"nombre": "Fernando Jaramillo", "accion": "1086", "jugadas": 2, "victorias": 2, "pct": 100.0}, {"nombre": "Juan Carlos Valenzuela", "accion": "7", "jugadas": 14, "victorias": 2, "pct": 14.3}, {"nombre": "Felipe Chavarriaga", "accion": "54", "jugadas": 8, "victorias": 2, "pct": 25.0}, {"nombre": "Pablo Fernandez de Soto", "accion": "325", "jugadas": 19, "victorias": 1, "pct": 5.3}, {"nombre": "Pedro Grot", "accion": "371", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Pablo Carrasquilla", "accion": "438", "jugadas": 7, "victorias": 1, "pct": 14.3}, {"nombre": "Nicolo Ravano", "accion": "185", "jugadas": 2, "victorias": 1, "pct": 50.0}, {"nombre": "Carlos Leal", "accion": "137", "jugadas": 6, "victorias": 1, "pct": 16.7}, {"nombre": "Nicolas Duran", "accion": "77", "jugadas": 11, "victorias": 1, "pct": 9.1}, {"nombre": "Paulo Calderon", "accion": "287", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Pablo Rion", "accion": "418", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Nicolas Restrepo", "accion": "380", "jugadas": 2, "victorias": 1, "pct": 50.0}, {"nombre": "Nicolas Revollo", "accion": "628", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Daniel Sanchez", "accion": "114", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Daniel Ricaurte", "accion": "1074", "jugadas": 3, "victorias": 1, "pct": 33.3}, {"nombre": "Esteban Aristizabal", "accion": "151", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Angela Maria Gomez", "accion": "47", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Camila Toscana", "accion": "296", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Camilo Luna", "accion": "228", "jugadas": 7, "victorias": 1, "pct": 14.3}, {"nombre": "Andres Rodriguez", "accion": "2265", "jugadas": 13, "victorias": 1, "pct": 7.7}, {"nombre": "Carlos Hoyos", "accion": "68", "jugadas": 5, "victorias": 1, "pct": 20.0}, {"nombre": "Octavio Villa", "accion": "287", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Juan B Mejia", "accion": "13", "jugadas": 12, "victorias": 1, "pct": 8.3}, {"nombre": "Jeronimo Lopez", "accion": "286", "jugadas": 5, "victorias": 1, "pct": 20.0}, {"nombre": "Fernando Duque", "accion": "104", "jugadas": 8, "victorias": 1, "pct": 12.5}, {"nombre": "Fernando Gonzalez", "accion": "268", "jugadas": 2, "victorias": 1, "pct": 50.0}, {"nombre": "Esteban Valserra", "accion": "264", "jugadas": 4, "victorias": 1, "pct": 25.0}, {"nombre": "Fabian Camacho", "accion": "279", "jugadas": 3, "victorias": 1, "pct": 33.3}, {"nombre": "Felipe Arango", "accion": "58", "jugadas": 3, "victorias": 1, "pct": 33.3}, {"nombre": "Martin Faccini", "accion": "305", "jugadas": 3, "victorias": 1, "pct": 33.3}, {"nombre": "Carlos Yunes", "accion": "135", "jugadas": 2, "victorias": 1, "pct": 50.0}, {"nombre": "Matias Lopez Tovar", "accion": "293", "jugadas": 5, "victorias": 1, "pct": 20.0}, {"nombre": "Mauricio Morales", "accion": "369", "jugadas": 4, "victorias": 1, "pct": 25.0}, {"nombre": "Daniel Callamand", "accion": "203", "jugadas": 4, "victorias": 1, "pct": 25.0}, {"nombre": "Daniel Cortes", "accion": "19", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Carlos Rodriguez", "accion": "290", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Mariana Arbelaez", "accion": "643", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Luis Buendia", "accion": "232", "jugadas": 12, "victorias": 1, "pct": 8.3}, {"nombre": "Mateo de Castro", "accion": "611", "jugadas": 2, "victorias": 1, "pct": 50.0}, {"nombre": "Lurde Duque", "accion": "2003", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Luis Guillermo Rodriguez", "accion": "330", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Maria Camila Machado", "accion": "224", "jugadas": 3, "victorias": 1, "pct": 33.3}, {"nombre": "Gustavo Torres", "accion": "95", "jugadas": 2, "victorias": 1, "pct": 50.0}, {"nombre": "Hector Hernandez", "accion": "270", "jugadas": 2, "victorias": 1, "pct": 50.0}, {"nombre": "Ignacio Santamaria", "accion": "101", "jugadas": 5, "victorias": 1, "pct": 20.0}, {"nombre": "Christian Piwek", "accion": "147", "jugadas": 2, "victorias": 1, "pct": 50.0}, {"nombre": "Carlos Villa", "accion": "287", "jugadas": 9, "victorias": 1, "pct": 11.1}, {"nombre": "Joyce Grimbery", "accion": "3", "jugadas": 4, "victorias": 1, "pct": 25.0}, {"nombre": "Jose Tarazona", "accion": "127", "jugadas": 6, "victorias": 1, "pct": 16.7}, {"nombre": "Jose Luis Gomez", "accion": "25", "jugadas": 8, "victorias": 1, "pct": 12.5}, {"nombre": "Felipe Barbosa", "accion": "218", "jugadas": 6, "victorias": 1, "pct": 16.7}, {"nombre": "Juan Carlos Padilla", "accion": "97", "jugadas": 8, "victorias": 1, "pct": 12.5}, {"nombre": "Jose Antonio Ricaurte", "accion": "513", "jugadas": 4, "victorias": 1, "pct": 25.0}, {"nombre": "Felipe Garcia", "accion": "670", "jugadas": 3, "victorias": 1, "pct": 33.3}, {"nombre": "Gediminas Norkevicius", "accion": "106", "jugadas": 8, "victorias": 1, "pct": 12.5}, {"nombre": "Francisco Duran", "accion": "518", "jugadas": 3, "victorias": 1, "pct": 33.3}, {"nombre": "Jorge Gabriel Salgar Ortiz", "accion": "2039", "jugadas": 2, "victorias": 1, "pct": 50.0}, {"nombre": "Jairo Pinzon", "accion": "234", "jugadas": 4, "victorias": 1, "pct": 25.0}, {"nombre": "Juan Pablo Davila", "accion": "249", "jugadas": 10, "victorias": 1, "pct": 10.0}, {"nombre": "Juan Manuel Jimenez", "accion": "610", "jugadas": 7, "victorias": 1, "pct": 14.3}, {"nombre": "Julia Erizo", "accion": "233", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Sebastiano Ravano", "accion": "96", "jugadas": 4, "victorias": 1, "pct": 25.0}, {"nombre": "Sebastian Troncar", "accion": "284", "jugadas": 4, "victorias": 1, "pct": 25.0}, {"nombre": "Sebastian Jaramillo", "accion": "129", "jugadas": 9, "victorias": 1, "pct": 11.1}, {"nombre": "Juan Manuel Morales", "accion": "347", "jugadas": 13, "victorias": 1, "pct": 7.7}, {"nombre": "Juan R Padilla", "accion": "244", "jugadas": 3, "victorias": 1, "pct": 33.3}, {"nombre": "Simone Karlesimo", "accion": "330", "jugadas": 5, "victorias": 1, "pct": 20.0}, {"nombre": "Simon Paez", "accion": "121", "jugadas": 3, "victorias": 1, "pct": 33.3}, {"nombre": "Santiago Varela", "accion": "258", "jugadas": 6, "victorias": 1, "pct": 16.7}, {"nombre": "Andres Guzman", "accion": "180", "jugadas": 4, "victorias": 1, "pct": 25.0}, {"nombre": "Andres Gomez", "accion": "25", "jugadas": 3, "victorias": 1, "pct": 33.3}, {"nombre": "Andres Alejandro Muller", "accion": "57", "jugadas": 4, "victorias": 1, "pct": 25.0}, {"nombre": "Andres Felipe Valserra", "accion": "263", "jugadas": 7, "victorias": 1, "pct": 14.3}, {"nombre": "Alejandro Rodriguez", "accion": "357", "jugadas": 1, "victorias": 1, "pct": 100.0}, {"nombre": "Alvaro Velez", "accion": "1027", "jugadas": 3, "victorias": 1, "pct": 33.3}, {"nombre": "Alejandro Prieto", "accion": "346", "jugadas": 2, "victorias": 1, "pct": 50.0}, {"nombre": "Alejandro Revollo", "accion": "51", "jugadas": 4, "victorias": 1, "pct": 25.0}, {"nombre": "Alejandro Castellanos", "accion": "181", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Alejandro Guarin", "accion": "551", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Alejandro Montoya", "accion": "2337", "jugadas": 3, "victorias": 0, "pct": 0.0}, {"nombre": "Alejandro Pinzon", "accion": "56", "jugadas": 4, "victorias": 0, "pct": 0.0}, {"nombre": "Alejandro Verswy", "accion": "362", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Alvaro Cheverria", "accion": "159", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Ana Maria Palao", "accion": "296", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Andres Castellanos", "accion": "181", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Andres F", "accion": "89", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Andres Garcia", "accion": "100", "jugadas": 4, "victorias": 0, "pct": 0.0}, {"nombre": "Andres Mejia", "accion": "37", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Andres Perez", "accion": "2294", "jugadas": 3, "victorias": 0, "pct": 0.0}, {"nombre": "Ricardo Leyva", "accion": "27", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Roberto Janiot", "accion": "214", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Samuel Velez", "accion": "840", "jugadas": 6, "victorias": 0, "pct": 0.0}, {"nombre": "Santiago Angel", "accion": "168", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Santiago Arbouin", "accion": "4", "jugadas": 3, "victorias": 0, "pct": 0.0}, {"nombre": "Santiago Arrubla", "accion": "205", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Santiago Garcia", "accion": "2111", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Santiago Jaramillo", "accion": "515", "jugadas": 7, "victorias": 0, "pct": 0.0}, {"nombre": "Santiago Jaramillo Ochoa", "accion": "676", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Santiago Laverde", "accion": "95", "jugadas": 3, "victorias": 0, "pct": 0.0}, {"nombre": "Santiago Leyva", "accion": "27", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Santiago Martinez Villalba", "accion": "151", "jugadas": 6, "victorias": 0, "pct": 0.0}, {"nombre": "Santiago Ospina", "accion": "361", "jugadas": 8, "victorias": 0, "pct": 0.0}, {"nombre": "Sebastian Aguirre", "accion": "61", "jugadas": 5, "victorias": 0, "pct": 0.0}, {"nombre": "Sergio Morales", "accion": "301", "jugadas": 4, "victorias": 0, "pct": 0.0}, {"nombre": "Simone Carlesimo", "accion": "330", "jugadas": 5, "victorias": 0, "pct": 0.0}, {"nombre": "Juan D Arrieta", "accion": "106", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Juan D Ospina", "accion": "2154", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Juan David Giron", "accion": "74", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Juan Felipe Gomez", "accion": "61", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Juan Felipe Toscana", "accion": "296", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Juan Guillermo Pombo", "accion": "47", "jugadas": 12, "victorias": 0, "pct": 0.0}, {"nombre": "Juan Londoño", "accion": "66", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Juan Mejia", "accion": "2286", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Juan Morales", "accion": "93", "jugadas": 3, "victorias": 0, "pct": 0.0}, {"nombre": "Juan Pablo Castañeda", "accion": "189", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Juan Pablo Delgado", "accion": "167", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Juan Pablo Leon", "accion": "94", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Julio González", "accion": "302", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Kevin Mills", "accion": "180", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Laura Montañez", "accion": "6", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Ignacion Villegas", "accion": "209", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Jaime Mor", "accion": "2196", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Jaime Prieto", "accion": "816", "jugadas": 3, "victorias": 0, "pct": 0.0}, {"nombre": "Jorge Luna", "accion": "431", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Juan C Hidalgo", "accion": "229", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Juan Carlos L", "accion": "298", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Juan Carlos Lopez", "accion": "293", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Fabio Saenz", "accion": "226", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Felipe Arboun G", "accion": "65", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Felipe Caicedo", "accion": "635", "jugadas": 8, "victorias": 0, "pct": 0.0}, {"nombre": "Felipe Parra", "accion": "254", "jugadas": 12, "victorias": 0, "pct": 0.0}, {"nombre": "Gabriel Padilla", "accion": "244", "jugadas": 4, "victorias": 0, "pct": 0.0}, {"nombre": "Geronimo Campos", "accion": "2466", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Giovanni Palma", "accion": "275", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Gonzalo A Perez", "accion": "144", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Gustavo Galves", "accion": "205", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Hernando Ospina", "accion": "291", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Maria Clara Carvajalino", "accion": "1061", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Maria Elvira Valenzuela", "accion": "267", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Maria Gladys Hidalgo", "accion": "157", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Maria Jimena Tovar", "accion": "293", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Mario Villate", "accion": "294", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Martin Bravo", "accion": "681", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Martin Peña", "accion": "114", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Mateo Hernandez", "accion": "270", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Mateo Pinto", "accion": "23", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Mauricio Carrasquilla", "accion": "438", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Mauricio M", "accion": "369", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Mauricio Toscana", "accion": "296", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Miguel D", "accion": "619", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Carlos Trujillo", "accion": "276", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Carolina Hernandez", "accion": "173", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Cesar Rocha", "accion": "182", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Chrich Norkvicius", "accion": "106", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Christian Luchan", "accion": "407", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Daniel Bernal", "accion": "808", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Daniel Ortiz", "accion": "2361", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Daniel Tobon", "accion": "180", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "David Velasquez", "accion": "103", "jugadas": 6, "victorias": 0, "pct": 0.0}, {"nombre": "Edmond Mishaan", "accion": "290", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Eduardo Jaramillo", "accion": "371", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Eduardo Navas", "accion": "329", "jugadas": 3, "victorias": 0, "pct": 0.0}, {"nombre": "Elizabeth de Vergara", "accion": "1076", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Elso Bohorquez", "accion": "357", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Emilio Gonzalez", "accion": "268", "jugadas": 9, "victorias": 0, "pct": 0.0}, {"nombre": "Erik Espitia", "accion": "215", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Andres Uribe", "accion": "283", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Andres Villamil", "accion": "2551", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Antonio Alvarez", "accion": "191", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Antonio Rodriguez", "accion": "255", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Arturo Serrano", "accion": "196", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Camilo Iregui", "accion": "327", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Camilo Jaramillo V", "accion": "1094", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Camilo Marquez", "accion": "149", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Cariem Daniela Ruiz", "accion": "231", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Carlos A Ramirez", "accion": "198", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Carlos A Vargas", "accion": "92", "jugadas": 5, "victorias": 0, "pct": 0.0}, {"nombre": "Carlos Andrade", "accion": "2254", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Carlos Arturo Gallego", "accion": "217", "jugadas": 7, "victorias": 0, "pct": 0.0}, {"nombre": "Carlos E Barros", "accion": "90", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Natalia del Castillo", "accion": "296", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Nicolas Baron", "accion": "80", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Nicolas Gomez", "accion": "85", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Nicolas Morales", "accion": "212", "jugadas": 6, "victorias": 0, "pct": 0.0}, {"nombre": "Oscar Moreno ", "accion": "198", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Pablo Lobo Guerrero", "accion": "467", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Pablo Villegas", "accion": "209", "jugadas": 3, "victorias": 0, "pct": 0.0}, {"nombre": "Paulus Norkevicius", "accion": "106", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Philip Pearl", "accion": "114", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Philippe Gelloz", "accion": "194", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Sofia Vanegas", "accion": "3", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Alejandro Barbosa", "accion": "218", "jugadas": 7, "victorias": 0, "pct": 0.0}, {"nombre": "Tomas Peña", "accion": "114", "jugadas": 3, "victorias": 0, "pct": 0.0}, {"nombre": "Alberto Prieto Uribe", "accion": "1090", "jugadas": 2, "victorias": 0, "pct": 0.0}, {"nombre": "Victor Arrieta", "accion": "106", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Alberto McAlister", "accion": "1066", "jugadas": 1, "victorias": 0, "pct": 0.0}, {"nombre": "Adriana Leon", "accion": "148", "jugadas": 3, "victorias": 0, "pct": 0.0}],
+  dias_semana: [{"dia": "domingo", "jugadores": 662, "ganadores": 179}, {"dia": "lunes", "jugadores": 50, "ganadores": 14}, {"dia": "sábado", "jugadores": 985, "ganadores": 244}, {"dia": "viernes", "jugadores": 67, "ganadores": 20}]
+};
+
+// ════════════════════ NAV ════════════════════
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.topnav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id === 'ranking') renderRanking();
+  if(id === 'calendario') renderCalendar();
+  if(id === 'buscador') renderAllPlayers();
+  if(id === 'actualizar') renderRecent();
+}
+function showModal() { document.getElementById('modal-overlay').classList.add('show'); }
+function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); }
+
+// ════════════════════ CHARTS — OVERVIEW ════════════════════
+let fechaChartInst = null;
+
+function buildFechasChart(type) {
+  const labels = DATA.por_fecha.map(d => d.fecha);
+  const jug = DATA.por_fecha.map(d => d.jugadores);
+  const gan = DATA.por_fecha.map(d => d.ganadores);
+  const ctx = document.getElementById('chartFechas').getContext('2d');
+  if(fechaChartInst) fechaChartInst.destroy();
+  fechaChartInst = new Chart(ctx, {
+    type: type,
+    data: {
+      labels,
+      datasets: [
+        { label: 'Jugadores', data: jug, backgroundColor: type==='bar' ? 'rgba(200,168,75,0.7)' : 'transparent',
+           borderColor: '#c8a84b', borderWidth: 2, tension: 0.35, pointBackgroundColor: '#c8a84b', pointRadius: 3 },
+        { label: 'Ganadores', data: gan, backgroundColor: type==='bar' ? 'rgba(62,167,107,0.7)' : 'transparent',
+           borderColor: '#3ea76b', borderWidth: 2, tension: 0.35, pointBackgroundColor: '#3ea76b', pointRadius: 3 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1a1a1a', borderColor: '#333', borderWidth: 1,
+        titleColor: '#f2ede6', bodyColor: '#9a9590', padding: 10,
+        callbacks: { afterLabel: ctx => ctx.datasetIndex===1 ? `  Tasa: ${Math.round(ctx.raw/jug[ctx.dataIndex]*1000)/10}%` : '' } } },
+      scales: {
+        x: { ticks: { color: '#5a5550', font: { size: 10 }, maxRotation: 45 }, grid: { color: '#1e1e1e' }, border: { color: '#2a2a2a' } },
+        y: { ticks: { color: '#5a5550', font: { size: 10 } }, grid: { color: '#1e1e1e' }, border: { color: '#2a2a2a' } }
+      }
+    }
+  });
+}
+
+function switchDateChart(type, btn) {
+  document.querySelectorAll('.cc-tabs .ct').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildFechasChart(type);
+}
+
+function buildMesChart() {
+  const labels = DATA.por_mes.map(d => d.mes.charAt(0).toUpperCase() + d.mes.slice(1));
+  const jug = DATA.por_mes.map(d => d.jugadores);
+  const gan = DATA.por_mes.map(d => d.ganadores);
+  new Chart(document.getElementById('chartMes').getContext('2d'), {
+    type: 'bar',
+    data: { labels, datasets: [
+      { label:'Jugadores', data:jug, backgroundColor:'rgba(200,168,75,0.65)', borderColor:'#c8a84b', borderWidth:1.5, borderRadius:4 },
+      { label:'Ganadores', data:gan, backgroundColor:'rgba(62,167,107,0.65)', borderColor:'#3ea76b', borderWidth:1.5, borderRadius:4 }
+    ] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ backgroundColor:'#1a1a1a', borderColor:'#333', borderWidth:1, titleColor:'#f2ede6', bodyColor:'#9a9590' } },
+      scales:{ x:{ ticks:{ color:'#5a5550', font:{ size:9 } }, grid:{ color:'#1e1e1e' }, border:{ color:'#2a2a2a' } }, y:{ ticks:{ color:'#5a5550', font:{ size:9 } }, grid:{ color:'#1e1e1e' }, border:{ color:'#2a2a2a' } } } }
+  });
+}
+
+function buildPctMesChart() {
+  const labels = DATA.por_mes.map(d => d.mes.charAt(0).toUpperCase() + d.mes.slice(1));
+  const pcts = DATA.por_mes.map(d => d.pct);
+  new Chart(document.getElementById('chartPctMes').getContext('2d'), {
+    type: 'line',
+    data: { labels, datasets: [{ label:'% Victoria', data:pcts,
+      borderColor:'#c8a84b', backgroundColor:'rgba(200,168,75,0.12)',
+      borderWidth:2.5, tension:0.35, fill:true, pointBackgroundColor:'#c8a84b', pointRadius:5, pointHoverRadius:7 }] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }, tooltip:{ backgroundColor:'#1a1a1a', borderColor:'#333', borderWidth:1, titleColor:'#f2ede6', bodyColor:'#9a9590',
+        callbacks:{ label: ctx => ' ' + ctx.raw + '%' } } },
+      scales:{ x:{ ticks:{ color:'#5a5550', font:{ size:9 } }, grid:{ color:'#1e1e1e' }, border:{ color:'#2a2a2a' } },
+        y:{ ticks:{ color:'#5a5550', font:{ size:9 }, callback: v => v+'%' }, grid:{ color:'#1e1e1e' }, border:{ color:'#2a2a2a' }, min:15, max:40 } } }
+  });
+}
+
+function buildDiasChart() {
+  const dias = DATA.dias_semana.filter(d => d.dia === 'sábado' || d.dia === 'domingo');
+  const labels = dias.map(d => d.dia.charAt(0).toUpperCase() + d.dia.slice(1));
+  const jug = dias.map(d => d.jugadores);
+  const gan = dias.map(d => d.ganadores);
+  new Chart(document.getElementById('chartDias').getContext('2d'), {
+    type: 'bar',
+    data: { labels, datasets: [
+      { label:'Jugadores', data:jug, backgroundColor:'rgba(200,168,75,0.65)', borderColor:'#c8a84b', borderWidth:1.5, borderRadius:6 },
+      { label:'Ganadores', data:gan, backgroundColor:'rgba(62,167,107,0.65)', borderColor:'#3ea76b', borderWidth:1.5, borderRadius:6 }
+    ] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }, tooltip:{ backgroundColor:'#1a1a1a', borderColor:'#333', borderWidth:1, titleColor:'#f2ede6', bodyColor:'#9a9590' } },
+      scales:{ x:{ ticks:{ color:'#5a5550', font:{ size:10 } }, grid:{ display:false }, border:{ color:'#2a2a2a' } },
+        y:{ ticks:{ color:'#5a5550', font:{ size:9 } }, grid:{ color:'#1e1e1e' }, border:{ color:'#2a2a2a' } } } }
+  });
+}
+
+// ════════════════════ RANKING ════════════════════
+let currentRankMode = 'ganadores';
+const rankModes = {
+  ganadores: { data: DATA.top_ganadores, badge: 'Por Victorias', key: 'victorias', label: 'Vict.' },
+  jugadores: { data: DATA.top_jugadores, badge: 'Por Participación', key: 'jugadas', label: 'Part.' },
+  pct: { data: DATA.mejor_pct, badge: 'Por % Éxito', key: 'pct', label: '% Éxito' }
+};
+
+function switchRanking(mode, btn) {
+  currentRankMode = mode;
+  document.querySelectorAll('#page-ranking .cc-tabs .ct').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderRanking();
+}
+
+function renderRanking() {
+  const mode = rankModes[currentRankMode];
+  document.getElementById('rank-mode-badge').textContent = mode.badge;
+
+  // Podium
+  const top3 = mode.data.slice(0, 3);
+  const medals = ['🥇','🥈','🥉'];
+  const podiumColors = ['var(--gold)','#b0b0b0','#c47a3a'];
+  document.getElementById('podium').innerHTML = top3.map((p, i) => `
+    <div style="display:flex;align-items:center;gap:12px;background:var(--s2);border-radius:10px;padding:14px;border:1px solid ${i===0?'var(--gold3)':'var(--b1)'}">
+      <div style="font-size:24px;line-height:1">${medals[i]}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:var(--font-cond);font-size:16px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.nombre}</div>
+        <div style="font-size:10px;color:var(--t3)">Acción #${p.accion}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--font-display);font-size:26px;color:${podiumColors[i]}">
+          ${currentRankMode==='pct' ? p.pct+'%' : (currentRankMode==='ganadores' ? p.victorias : p.jugadas)}
+        </div>
+        <div style="font-size:9px;color:var(--t3)">${mode.label}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Table
+  document.getElementById('ranking-tbody').innerHTML = mode.data.slice(0,15).map((p, i) => `
+    <tr class="rank-row">
+      <td><div class="rnum ${i<3?'g'+(i+1):''}"><span>${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</span></div></td>
+      <td>
+        <div class="rname">${p.nombre}</div>
+        <div class="raccion">Acción #${p.accion}</div>
+      </td>
+      <td><span style="font-family:var(--font-cond);font-size:13px;color:var(--t2)">#${p.accion}</span></td>
+      <td><span class="rcount">${p.jugadas}</span></td>
+      <td><span class="rcount" style="color:var(--green2)">${p.victorias}</span></td>
+      <td>
+        <span class="rpct ${p.pct>=50?'green':p.pct>=25?'gold':'red'}">${p.pct}%</span>
+        <div class="rbar"><div class="rbar-fill ${p.pct>=30?'green':''}" style="width:${Math.min(p.pct,100)}%"></div></div>
+      </td>
+    </tr>
+  `).join('');
+
+  // Ranking charts
+  buildRankingCharts();
+}
+
+let topGanChart = null, topPctChart = null;
+function buildRankingCharts() {
+  const top10g = DATA.top_ganadores.slice(0,10);
+  const top10p = DATA.mejor_pct.slice(0,10);
+
+  if(topGanChart) topGanChart.destroy();
+  topGanChart = new Chart(document.getElementById('chartTopGan').getContext('2d'), {
+    type: 'bar', indexAxis: 'y',
+    data: { labels: top10g.map(d => d.nombre.split(' ')[0] + ' ' + (d.nombre.split(' ')[1]||'')),
+      datasets: [{ label:'Victorias', data: top10g.map(d => d.victorias),
+        backgroundColor: top10g.map((_,i) => i===0?'rgba(200,168,75,0.85)':i===1?'rgba(176,176,176,0.7)':i===2?'rgba(196,122,58,0.7)':'rgba(200,168,75,0.35)'),
+        borderColor: '#c8a84b', borderWidth: 1, borderRadius: 4 }] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }, tooltip:{ backgroundColor:'#1a1a1a', borderColor:'#333', borderWidth:1, titleColor:'#f2ede6', bodyColor:'#9a9590' } },
+      scales:{ x:{ ticks:{ color:'#5a5550', font:{ size:9 } }, grid:{ color:'#1e1e1e' }, border:{ color:'#2a2a2a' } },
+        y:{ ticks:{ color:'#9a9590', font:{ size:10 } }, grid:{ display:false }, border:{ color:'#2a2a2a' } } } }
+  });
+
+  if(topPctChart) topPctChart.destroy();
+  topPctChart = new Chart(document.getElementById('chartTopPct').getContext('2d'), {
+    type: 'bar', indexAxis: 'y',
+    data: { labels: top10p.map(d => d.nombre.split(' ')[0] + ' ' + (d.nombre.split(' ')[1]||'')),
+      datasets: [{ label:'% Éxito', data: top10p.map(d => d.pct),
+        backgroundColor: 'rgba(62,167,107,0.5)', borderColor: '#3ea76b', borderWidth: 1.5, borderRadius: 4 }] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }, tooltip:{ backgroundColor:'#1a1a1a', borderColor:'#333', borderWidth:1, titleColor:'#f2ede6', bodyColor:'#9a9590',
+        callbacks:{ label: ctx => ' ' + ctx.raw + '%' } } },
+      scales:{ x:{ ticks:{ color:'#5a5550', font:{ size:9 }, callback: v => v+'%' }, grid:{ color:'#1e1e1e' }, border:{ color:'#2a2a2a' }, max:100 },
+        y:{ ticks:{ color:'#9a9590', font:{ size:10 } }, grid:{ display:false }, border:{ color:'#2a2a2a' } } } }
+  });
+}
+
+// ════════════════════ CALENDAR ════════════════════
+function renderCalendar() {
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = DATA.por_fecha.map(d => {
+    const pct = d.pct;
+    const color = pct >= 30 ? 'var(--green)' : pct >= 20 ? 'var(--gold)' : 'var(--red)';
+    const bgColor = pct >= 30 ? 'rgba(62,167,107,0.06)' : pct >= 20 ? 'rgba(200,168,75,0.06)' : 'rgba(217,82,82,0.06)';
+    const dia = d.dia.charAt(0).toUpperCase() + d.dia.slice(1,3);
+    return `<div class="cal-cell" style="background:${bgColor};border-color:${color}22" title="${d.fecha} — ${d.jugadores} jugadores, ${d.ganadores} ganadores (${pct}%)">
+      <div class="cal-date">${d.fecha} ${dia}</div>
+      <div class="cal-jug" style="color:${color}">${d.jugadores}</div>
+      <div class="cal-sub">${d.ganadores} ganadores</div>
+      <div class="cal-pct" style="color:${color}">${pct}%</div>
+    </div>`;
+  }).join('');
+
+  buildEvolChart();
+}
+
+let evolChart = null;
+function buildEvolChart() {
+  if(evolChart) evolChart.destroy();
+  const labels = DATA.por_fecha.map(d => d.fecha);
+  const jug = DATA.por_fecha.map(d => d.jugadores);
+  const gan = DATA.por_fecha.map(d => d.ganadores);
+  evolChart = new Chart(document.getElementById('chartEvol').getContext('2d'), {
+    type: 'line',
+    data: { labels, datasets: [
+      { label:'Jugadores', data:jug, borderColor:'#c8a84b', backgroundColor:'rgba(200,168,75,0.08)', borderWidth:2, tension:0.35, fill:true, pointBackgroundColor:'#c8a84b', pointRadius:4 },
+      { label:'Ganadores', data:gan, borderColor:'#3ea76b', backgroundColor:'rgba(62,167,107,0.08)', borderWidth:2, tension:0.35, fill:true, pointBackgroundColor:'#3ea76b', pointRadius:4 }
+    ] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }, tooltip:{ backgroundColor:'#1a1a1a', borderColor:'#333', borderWidth:1, titleColor:'#f2ede6', bodyColor:'#9a9590', padding:10 } },
+      scales:{ x:{ ticks:{ color:'#5a5550', font:{ size:9 }, maxRotation:45 }, grid:{ color:'#1e1e1e' }, border:{ color:'#2a2a2a' } },
+        y:{ ticks:{ color:'#5a5550', font:{ size:9 } }, grid:{ color:'#1e1e1e' }, border:{ color:'#2a2a2a' } } } }
+  });
+}
+
+// ════════════════════ SEARCH ════════════════════
+function searchPlayer(query) {
+  const res = document.getElementById('search-results');
+  if(!query || query.length < 2) { res.classList.remove('show'); res.innerHTML = ''; return; }
+  const q = query.toLowerCase();
+  const found = DATA.todos_socios.filter(s =>
+    s.nombre.toLowerCase().includes(q) || s.accion.toString().includes(q)
+  ).slice(0, 5);
+  res.classList.add('show');
+  if(!found.length) { res.innerHTML = '<div class="no-results">No se encontró ningún socio</div>'; return; }
+  res.innerHTML = found.map(p => `
+    <div class="sr-card">
+      <div class="sr-name">${p.nombre} <span style="font-size:12px;color:var(--t3);font-weight:400">· Acción #${p.accion}</span></div>
+      <div class="sr-stats">
+        <div class="sr-stat"><div class="sr-stat-val" style="color:var(--t1)">${p.jugadas}</div><div class="sr-stat-lbl">Partidas</div></div>
+        <div class="sr-stat"><div class="sr-stat-val" style="color:var(--green2)">${p.victorias}</div><div class="sr-stat-lbl">Victorias</div></div>
+        <div class="sr-stat"><div class="sr-stat-val" style="color:var(--red2)">${p.jugadas - p.victorias}</div><div class="sr-stat-lbl">Derrotas</div></div>
+        <div class="sr-stat"><div class="sr-stat-val" style="color:${p.pct>=30?'var(--green2)':p.pct>=15?'var(--gold2)':'var(--red2)'}">${p.pct}%</div><div class="sr-stat-lbl">% Éxito</div></div>
+      </div>
+      <div style="margin-top:10px;height:4px;background:var(--s3);border-radius:2px">
+        <div style="height:100%;width:${Math.min(p.pct,100)}%;background:${p.pct>=30?'var(--green)':p.pct>=15?'var(--gold)':'var(--red)'};border-radius:2px;transition:.4s"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderAllPlayers() {
+  document.getElementById('all-players-tbody').innerHTML = DATA.todos_socios.map((p,i) => `
+    <tr>
+      <td><span class="rnum ${i<3?'g'+(i+1):''}">${i+1}</span></td>
+      <td><div class="rname">${p.nombre}</div></td>
+      <td><span class="raccion">#${p.accion}</span></td>
+      <td><span class="rcount">${p.jugadas}</span></td>
+      <td><span class="rcount" style="color:var(--green2)">${p.victorias}</span></td>
+      <td><span class="rpct ${p.pct>=50?'green':p.pct>=25?'gold':'red'}">${p.pct}%</span>
+        <div class="rbar" style="width:60px"><div class="rbar-fill ${p.pct>=30?'green':''}" style="width:${Math.min(p.pct,100)}%"></div></div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ════════════════════ ACTUALIZAR ════════════════════
+function renderRecent() {
+  const recent = DATA.por_fecha.slice(-8).reverse();
+  document.getElementById('recent-dates').innerHTML = recent.map(d => `
+    <div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r2);padding:14px;text-align:center">
+      <div style="font-size:9px;font-weight:700;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">${d.fecha} · ${d.dia}</div>
+      <div style="font-family:var(--font-display);font-size:28px;color:var(--t1);line-height:1">${d.jugadores}</div>
+      <div style="font-size:10px;color:var(--t2);margin:4px 0">jugadores</div>
+      <div style="font-size:11px;font-weight:600;color:${d.pct>=30?'var(--green2)':d.pct>=20?'var(--gold2)':'var(--red2)'}">${d.ganadores} ganadores · ${d.pct}%</div>
+    </div>
+  `).join('');
+}
+
+function addQuickEntry() {
+  const fecha = document.getElementById('new-fecha').value;
+  const jug = parseInt(document.getElementById('new-jug').value)||0;
+  const gan = parseInt(document.getElementById('new-gan').value)||0;
+  const s = document.getElementById('quick-status');
+  if(!fecha || jug<=0) { s.style.display='block'; s.style.background='var(--red-bg)'; s.style.color='var(--red2)'; s.textContent='Por favor completa la fecha y el número de jugadores'; return; }
+  if(gan>jug) { s.style.display='block'; s.style.background='var(--red-bg)'; s.style.color='var(--red2)'; s.textContent='Los ganadores no pueden ser más que los jugadores'; return; }
+  s.style.display='block'; s.style.background='var(--green-bg)'; s.style.color='var(--green2)';
+  s.textContent = `✓ Entrada del ${fecha} registrada: ${jug} jugadores, ${gan} ganadores (${Math.round(gan/jug*100)}%)`;
+  document.getElementById('new-fecha').value='';
+  document.getElementById('new-jug').value='';
+  document.getElementById('new-gan').value='';
+}
+
+function handleFile(file) {
+  if(!file) return;
+  const status1 = document.getElementById('status-msg');
+  const status2 = document.getElementById('modal-status');
+  const msg = `✓ Archivo "${file.name}" recibido (${(file.size/1024).toFixed(1)} KB). Para actualizar el dashboard con datos reales, actualiza el archivo fuente y regenera el HTML.`;
+  if(status1) { status1.className='status-msg ok'; status1.textContent=msg; }
+  if(status2) { status2.className='status-msg ok'; status2.textContent=msg; }
+}
+function handleDrop(e) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if(file) handleFile(file);
+}
+
+// ════════════════════ INIT ════════════════════
+window.addEventListener('load', () => {
+  buildFechasChart('bar');
+  buildMesChart();
+  buildPctMesChart();
+  buildDiasChart();
+});
+
+document.addEventListener('click', e => {
+  if(e.target.id==='modal-overlay') closeModal();
+  if(!e.target.closest('.search-wrap')) {
+    document.getElementById('search-results')?.classList.remove('show');
+  }
+});
+</script>
+</body>
+</html>
